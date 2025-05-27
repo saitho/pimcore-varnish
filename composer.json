@@ -20,7 +20,7 @@
     ],
     "require": {
         "php": ">=8.0",
-        "pimcore/pimcore": "^10.4",
+        "pimcore/pimcore": "^11.0",
         "friendsofsymfony/http-cache-bundle": "^2.12",
         "nyholm/psr7": "^1.5",
         "guzzlehttp/promises": "^1.5"
