@@ -23,7 +23,7 @@
         "pimcore/pimcore": "^11.0",
         "friendsofsymfony/http-cache-bundle": "^2.12",
         "nyholm/psr7": "^1.5",
-        "guzzlehttp/promises": "^1.5"
+        "guzzlehttp/promises": "^2.0"
     },
     "require-dev": {
         "symplify/easy-coding-standard": "^9.4"
