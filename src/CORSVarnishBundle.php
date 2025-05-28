@@ -24,7 +24,7 @@ use Pimcore\HttpKernel\BundleCollection\BundleCollection;
 
 class CORSVarnishBundle extends AbstractPimcoreBundle implements DependentBundleInterface
 {
-    public static function registerDependentBundles(BundleCollection $collection)
+    public static function registerDependentBundles(BundleCollection $collection): void
     {
         $collection->addBundle(new FOSHttpCacheBundle());
     }
