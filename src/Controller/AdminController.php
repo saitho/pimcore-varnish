@@ -22,11 +22,18 @@ use FOS\HttpCache\CacheInvalidator;
 use FOS\HttpCacheBundle\CacheManager;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\Service;
+use Pimcore\Security\User\TokenStorageUserResolver;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Csrf\TokenStorage\TokenStorageInterface;
 
-class AdminController extends \Pimcore\Bundle\AdminBundle\Controller\AdminController
+class AdminController extends \Pimcore\Bundle\AdminBundle\Controller\AdminAbstractController
 {
+    public function __construct(protected TokenStorageUserResolver $tokenResolver)
+    {
+        $this->setTokenResolver($tokenResolver);
+    }
+
     public function clearElementCache(Request $request, ElementHelper $elementHelper)
     {
         $this->checkPermissionsHasOneOf(['clear_cache']);

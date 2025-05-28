@@ -11,88 +11,83 @@
  * @license    https://www.cors.gmbh/license     GPLv3 and PCL
  */
 
-pimcore.registerNS('pimcore.plugin.cors_varnish');
+function purgeCache() {
+    Ext.Ajax.request({
+        url: Routing.generate('cors_varnish_purge_cache'),
+        method: "DELETE",
+    });
+}
 
-pimcore.plugin.cors_varnish = Class.create(pimcore.plugin.admin, {
-    getClassName: function () {
-        return 'pimcore.plugin.cors_varnish';
-    },
+function clearCache(id, type) {
+    Ext.Ajax.request({
+        url: Routing.generate('cors_varnish_clear_element_cache'),
+        method: "DELETE",
+        params: {
+            id: id,
+            type: type
+        }
+    });
+}
 
+function _enrichElement(tab, type) {
+    console.log(tab)
+    tab.helpers.toolbarActions.push({
+        text: t('cors_varnish_purge_cache'),
+        scale: 'medium',
+        iconCls: 'pimcore_nav_icon_clear_cache',
+        handler: function (document) {
+            clearCache(tab.id, type)
+        }
+    });
+}
+
+pimcore.registerNS("pimcore.bundle.cors_varnish");
+
+pimcore.bundle.cors_varnish = Class.create({
     initialize: function () {
-        pimcore.plugin.broker.registerPlugin(this);
+        document.addEventListener(pimcore.events.pimcoreReady, this.pimcoreReady.bind(this));
+        //document.addEventListener(pimcore.events.postOpenObject, this.postOpenObject.bind(this));
+        //document.addEventListener(pimcore.events.postOpenDocument, this.postOpenDocument.bind(this));
     },
 
-    postOpenObject: function (tab) {
-        debugger;
+    postOpenDocument: function (e) {
         var user = pimcore.globalmanager.get('user');
 
         if (user.isAllowed('clear_cache')) {
-            this._enrichElement(tab, 'object');
+            _enrichElement(pimcore.document, 'document');
 
             pimcore.layout.refresh();
         }
     },
 
-    postOpenDocument: function (tab) {
-        debugger;
-        var user = pimcore.globalmanager.get('user');
-
-        if (user.isAllowed('clear_cache')) {
-            this._enrichElement(tab, 'document');
-
-            pimcore.layout.refresh();
-        }
-    },
-
-    _enrichElement: function (tab, type) {
-        tab.toolbar.insert(tab.toolbar.items.length, '-');
-        tab.toolbar.insert(tab.toolbar.items.length, {
-            text: t('cors_varnish_purge_cache'),
-            scale: 'medium',
-            iconCls: 'pimcore_nav_icon_clear_cache',
-            handler: function () {
-                this.clearCache(tab.id, type)
-            }.bind(this, tab)
-        });
-    },
-
-    pimcoreReady: function (params, broker) {
-
+    pimcoreReady: function (e) {
         var user = pimcore.globalmanager.get('user');
 
         if (user.isAllowed('clear_cache')) {
 
-            var purgeCache = new Ext.Action({
+            var purgeCacheAction = new Ext.Action({
                 text: t('cors_varnish_purge_cache'),
                 iconCls: 'pimcore_nav_icon_clear_cache',
-                handler: this.purgeCache.bind(this)
+                handler: purgeCache.bind(this)
             });
 
             var cacheMenu = layoutToolbar.settingsMenu.down('#pimcore_menu_settings_cache');
 
             if (cacheMenu) {
-                cacheMenu.menu.add(purgeCache);
+                cacheMenu.menu.add(purgeCacheAction);
             }
         }
     },
 
-    purgeCache: function () {
-         Ext.Ajax.request({
-            url: Routing.generate('cors_varnish_purge_cache'),
-            method: "DELETE",
-        });
-    },
+    postOpenObject: function (e) {
+        var user = pimcore.globalmanager.get('user');
 
-    clearCache: function (id, type) {
-        Ext.Ajax.request({
-            url: Routing.generate('cors_varnish_clear_element_cache'),
-            method: "DELETE",
-            params: {
-                id: id,
-                type: type
-            }
-        });
+        if (user.isAllowed('clear_cache')) {
+            _enrichElement(pimcore.object, 'object');
+
+            pimcore.layout.refresh();
+        }
     },
 });
 
-new pimcore.plugin.cors_varnish();
+const pimcoreBundleCorsVarnish = new pimcore.bundle.cors_varnish();
