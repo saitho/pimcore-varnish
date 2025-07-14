@@ -19,14 +19,19 @@ namespace CORS\Bundle\VarnishBundle;
 
 use FOS\HttpCacheBundle\CacheManager;
 use FOS\HttpCacheBundle\Http\SymfonyResponseTagger;
+use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject;
+use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\Service;
+use Psr\Log\LoggerInterface;
 
 class ElementHelper
 {
     public function __construct(
         protected SymfonyResponseTagger $responseTagger,
-        protected CacheManager $cacheManager
+        protected CacheManager $cacheManager,
+        protected LoggerInterface $logger
     ) {
     }
 
@@ -35,8 +40,27 @@ class ElementHelper
         $this->responseTagger->addTags($this->getCacheTags($element));
     }
 
-    public function invalidate(ElementInterface $element)
+    public function invalidate(ElementInterface|ærray $element)
     {
+        if (is_array($element)) {
+            $type = $element['type'] ?? '';
+            $id = $element['id'] ?? '';
+            if (!$id) {
+                $this->logger->error('Invalidation with missing id for type type "' . $type . '" requested');
+                return;
+            }
+            $element = match ($type) {
+                'object' => DataObject::getById($id),
+                'document' => Document::getById($id),
+                'asset' => Asset::getById($id),
+                default => null
+            };
+
+            if (!$element) {
+                $this->logger->error('Invalidation of unknown type "' . $type . '" requested');
+                return;
+            }
+        }
         $this->cacheManager->invalidateTags($this->getCacheTags($element));
         $this->cacheManager->flush();
     }

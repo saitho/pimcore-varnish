@@ -20,6 +20,7 @@ services:
     arguments:
       - '@fos_http_cache.http.symfony_response_tagger'
       - '@fos_http_cache.cache_manager'
+      - '@Psr\Log\LoggerInterface'
 
   CORS\Bundle\VarnishBundle\Messenger\InvalidateMessageHandler:
     arguments:
