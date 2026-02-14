@@ -40,7 +40,7 @@ class ElementHelper
         $this->responseTagger->addTags($this->getCacheTags($element));
     }
 
-    public function invalidate(ElementInterface|ærray $element)
+    public function invalidate(ElementInterface|array $element)
     {
         if (is_array($element)) {
             $type = $element['type'] ?? '';
